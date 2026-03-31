@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefCheck | Academic Integrity</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        html, body { height: 100%; }
+        body { 
+            display: flex; flex-direction: column; 
+            background-color: #f8f9fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        .content-wrapper { flex: 1 0 auto; }
+        
+        /* Theme Styles */
+        .rounded-4 { border-radius: 1.1rem !important; }
+        .btn-primary { 
+            background-color: #002366 !important; 
+            border: none; 
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: #001a4d !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,35,102,0.2) !important;
+        }
+
+        /* Upgraded Progress Bar */
+        .progress { 
+            height: 18px !important; 
+            border-radius: 50px; 
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+        }
+        .progress-bar { 
+            background-color: #FFD700 !important; 
+            color: #002366 !important; 
+            font-weight: bold;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        /* Footer Styles */
+        footer {
+            flex-shrink: 0;
+            background-color: #002366;
+            color: white;
+            padding: 3rem 0;
+            margin-top: 4rem;
+            border-top: 5px solid #FFD700;
+        }
+        .footer-heading { color: #FFD700; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 1rem; }
+        .footer-text { font-size: 0.85rem; color: #cbd5e0; line-height: 1.6; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); margin-top: 2rem; padding-top: 1.5rem; }
+    </style>
+</head>
+<body>
+
+<div class="content-wrapper">
+    <div class="container py-5">
+        <div class="col-lg-9 mx-auto">
+            <div class="animate__animated animate__fadeInDown">
+                <h2 class="fw-bold mb-1" style="color: #002366;">
+                    <i class="bi bi-patch-check-fill me-2 text-primary"></i>RefCheck
+                </h2>
+                <p class="text-muted mb-4">Trust, but verify the source. [Evan]</p>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 animate__animated animate__fadeIn">
+                <textarea id="refs" class="form-control border-0 bg-light p-3 rounded-3 mb-3" rows="6" 
+                    placeholder="Paste your references here...&#10;Example:&#10;Doe, J. (2023). Study on AI. Journal of Tech.&#10;Smith, A. 2022. Global Warming. Science Press."></textarea>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+                    <div class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i> Supports APA & IEEE. One reference per line.
+                    </div>
+                    <button id="checkBtn" onclick="checkRefs()" class="btn btn-primary px-5 py-2 rounded-3 fw-bold shadow-sm" disabled>
+                        Verify References
+                    </button>
+                </div>
+            </div>
+
+            <div id="progressContainer" class="d-none py-4 text-center animate__animated animate__fadeIn">
+                <div class="progress mb-2">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar">0%</div>
+                </div>
+                <small id="progressStatus" class="text-muted" style="letter-spacing: 1px;">
+                    Connecting to Metadata Database...
+                </small>
+            </div>
+
+            <div id="resultsContainer" class="d-none">
+                <div id="overall" class="animate__animated animate__fadeIn"></div>
+                <div id="resultsList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="footer-heading">Disclaimer</div>
+                <p class="footer-text">
+                    This tool uses the CrossRef API to match bibliographic data. Results are based on metadata availability; 
+                    always perform a manual check for high-stakes academic submissions.
+                </p>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="footer-heading">How to Use</div>
+                <ul class="list-unstyled footer-text">
+                    <li><i class="bi bi-check2-circle me-2 text-warning"></i>Paste references (one per line).</li>
+                    <li><i class="bi bi-check2-circle me-2 text-warning"></i>Click "Verify References".</li>
+                    <li><i class="bi bi-check2-circle me-2 text-warning"></i>Review accuracy scores and DOIs.</li>
+                </ul>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="footer-heading">Help us improve</div>
+                <p class="footer-text mb-2">
+                    RefCheck is currently in testing phase. Your feedback is vital to our development.
+                </p>
+                            <a href="https://forms.gle/kEbzGPxDtFhfAxRw7" 
+                target="_blank" 
+                class="btn btn-outline-warning btn-sm rounded-pill px-4 mt-2 shadow-sm">
+                    <i class="bi bi-card-checklist me-2"></i>Open Feedback Form
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom text-center">
+            <p class="mb-0 footer-text">
+                © 2026 <span style="color: #FFD700; font-weight: bold;">RefCheck</span>. 
+                Academic Integrity. Always. All ways.
+            </p>
+        </div>
+    </div>
+</footer>
+
+<script src="{% static 'app.js' %}"></script>
+</body>
+</html>
